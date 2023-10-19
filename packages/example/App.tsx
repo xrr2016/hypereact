@@ -1,8 +1,7 @@
 // @ts-nocheck
-// import Hypereact from 'hypereact';
+import Hypereact from './hypereact';
 import viteLogo from '/vite.svg';
 import javascriptLogo from './javascript.svg';
-import Hypereact from './hypereact';
 
 let counter = 0;
 
