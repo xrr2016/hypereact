@@ -1,9 +1,10 @@
 // @ts-nocheck
 // import Hypereact from 'hypereact';
-import './style.css';
 import viteLogo from '/vite.svg';
 import javascriptLogo from './javascript.svg';
 import Hypereact from './hypereact';
+
+let counter = 0;
 
 /** @jsx Hypereact.createElement */
 const App = (
@@ -19,7 +20,9 @@ const App = (
     </a>
     <h1>Hello Hypereact!</h1>
     <div class="card">
-      <button id="counter" type="button"></button>
+      <button id="counter" type="button">
+        {`count is ${counter}`}
+      </button>
     </div>
     <p class="read-the-docs">Click on the Vite logo to learn more</p>
   </div>

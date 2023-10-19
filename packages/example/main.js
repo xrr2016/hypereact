@@ -1,3 +1,4 @@
+import './style.css';
 import App from './App';
 import Hypereact from './hypereact';
 
