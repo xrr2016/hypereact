@@ -12,6 +12,7 @@
     "vite": "^4.4.5"
   },
   "dependencies": {
-    "hypereact": "link:../hypereact"
+    "hypereact": "link:../hypereact",
+    "react": "^18.2.0"
   }
 }
