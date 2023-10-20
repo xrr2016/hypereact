@@ -3,8 +3,6 @@ import Hypereact from './hypereact';
 import viteLogo from '/vite.svg';
 import javascriptLogo from './javascript.svg';
 
-let counter = 0;
-
 /** @jsx Hypereact.createElement */
 const App = (
   <div>
@@ -18,12 +16,14 @@ const App = (
       <img src={javascriptLogo} class="logo vanilla" alt="JavaScript logo" />
     </a>
     <h1>Hello Hypereact!</h1>
-    <div class="card">
-      <button id="counter" type="button">
-        {`count is ${counter}`}
-      </button>
-    </div>
     <p class="read-the-docs">Click on the Vite logo to learn more</p>
+    <ul>
+      <ol>任务1</ol>
+      <ol>任务2</ol>
+      <ol>任务3</ol>
+      <ol>任务4</ol>
+      <ol>任务5</ol>
+    </ul>
   </div>
 );
 
