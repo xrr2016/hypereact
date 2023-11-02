@@ -11,6 +11,8 @@ const updateValue = e => {
   renderApp()
 }
 
+const HelloFunctional = () => <h2>Hello, Functional Component</h2>
+
 export const renderApp = () => {
   /** @jsx Hypereact.createElement */
   const App = (
@@ -25,8 +27,11 @@ export const renderApp = () => {
       >
         <img src={javascriptLogo} class="logo vanilla" alt="JavaScript logo" />
       </a>
+
       <h1>Hello {value}!</h1>
       <input onInput={updateValue} value={value} />
+
+      <HelloFunctional />
     </div>
   )
 
