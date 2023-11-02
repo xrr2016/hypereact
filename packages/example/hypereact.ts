@@ -260,7 +260,7 @@ function updateHostComponent(fiber) {
   reconcileChildren(fiber, fiber.props.children)
 }
 
-function reconcileChildren(wipFiber, elements) {
+function reconcileChildren(wipFiber: Fiber, elements) {
   let index = 0
   let oldFiber = wipFiber.alternate && wipFiber.alternate.child
   let prevSibling = null
@@ -273,7 +273,6 @@ function reconcileChildren(wipFiber, elements) {
 
     if (sameType) {
       // @ts-ignore
-
       newFiber = {
         type: oldFiber.type,
         props: element.props,
@@ -305,6 +304,7 @@ function reconcileChildren(wipFiber, elements) {
     }
 
     if (index === 0) {
+      // @ts-ignore
       wipFiber.child = newFiber
     } else if (element) {
       // @ts-ignore

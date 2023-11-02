@@ -22,7 +22,7 @@ const HelloFunctional = () => {
     <div>
       <h2>Hello, Functional Component</h2>
       <p>Counter: {count}</p>
-      <button onClick={handleClick}>Plus 1</button>
+      <button onClick={handleClick}>Plus</button>
     </div>
   )
 }
