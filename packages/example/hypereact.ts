@@ -1,11 +1,22 @@
-// @ts-nocheck
-
 const TEXT_ELEMENT = "TEXT_ELEMENT"
 
 enum EffectTag {
   UPDATE,
   PLACEMENT,
   DELETION,
+}
+
+interface Fiber {
+  type: String | Function
+  props: {
+    children: []
+  }
+  dom: HTMLElement
+  parent: Fiber
+  child: Fiber
+  sibling: Fiber
+  alternate: Fiber
+  effectTag: EffectTag
 }
 
 export function createElement(type, props, ...children) {
@@ -20,7 +31,7 @@ export function createElement(type, props, ...children) {
   }
 }
 
-function createTextElement(text) {
+function createTextElement(text: String) {
   return {
     type: TEXT_ELEMENT,
     props: {
@@ -30,12 +41,14 @@ function createTextElement(text) {
   }
 }
 
-function createDom(fiber) {
+function createDom(fiber: Fiber) {
   const dom =
     fiber.type == TEXT_ELEMENT
       ? document.createTextNode("")
-      : document.createElement(fiber.type)
+      : // @ts-ignore
+        document.createElement(fiber.type)
 
+  // @ts-ignore
   updateDom(dom, {}, fiber.props)
 
   return dom
@@ -92,12 +105,13 @@ function updateDom(dom: HTMLElement, prevProps, nextProps) {
 
 function commitRoot() {
   deletedFibers.forEach(commitWork)
+  // @ts-ignore
   commitWork(wipRoot.child)
   currentRoot = wipRoot
   wipRoot = null
 }
 
-function commitWork(fiber) {
+function commitWork(fiber: Fiber) {
   if (!fiber) {
     return
   }
@@ -120,7 +134,7 @@ function commitWork(fiber) {
   commitWork(fiber.sibling)
 }
 
-function commitDeletion(fiber, domParent) {
+function commitDeletion(fiber: Fiber, domParent: HTMLElement) {
   if (fiber.dom) {
     domParent.removeChild(fiber.dom)
   } else {
@@ -128,7 +142,8 @@ function commitDeletion(fiber, domParent) {
   }
 }
 
-export function render(element, container) {
+export function render(element, container: HTMLElement) {
+  // @ts-ignore
   wipRoot = {
     dom: container,
     props: {
@@ -143,7 +158,7 @@ export function render(element, container) {
 let nextUnitOfWork = null
 let currentRoot = null
 let wipRoot = null
-let deletedFibers = null
+let deletedFibers = []
 
 function workLoop(deadline) {
   let shouldYield = false
@@ -163,6 +178,7 @@ requestIdleCallback(workLoop)
 
 function performUnitOfWork(fiber) {
   const isFunctionComponent = fiber.type instanceof Function
+
   if (isFunctionComponent) {
     updateFunctionComponent(fiber)
   } else {
@@ -186,7 +202,9 @@ let hookIndex = null
 
 function updateFunctionComponent(fiber) {
   wipFiber = fiber
+  // @ts-ignore
   hookIndex = 0
+  // @ts-ignore
   wipFiber.hooks = []
 
   const children = [fiber.type(fiber.props)]
@@ -195,8 +213,11 @@ function updateFunctionComponent(fiber) {
 
 export function useState(initial: any) {
   const oldHook =
+    // @ts-ignore
     wipFiber.alternate &&
+    // @ts-ignore
     wipFiber.alternate.hooks &&
+    // @ts-ignore
     wipFiber.alternate.hooks[hookIndex]
   const hook = {
     state: oldHook ? oldHook.state : initial,
@@ -205,14 +226,18 @@ export function useState(initial: any) {
 
   const actions = oldHook ? oldHook.queue : []
 
-  actions.forEach(action => {
+  actions.forEach((action: Function) => {
     hook.state = action(hook.state)
   })
 
-  const setState = action => {
+  const setState = (action: Function) => {
+    // @ts-ignore
     hook.queue.push(action)
+    // @ts-ignore
     wipRoot = {
+      // @ts-ignore
       dom: currentRoot.dom,
+      // @ts-ignore
       props: currentRoot.props,
       alternate: currentRoot,
     }
@@ -220,7 +245,9 @@ export function useState(initial: any) {
     deletedFibers = []
   }
 
+  // @ts-ignore
   wipFiber.hooks.push(hook)
+  // @ts-ignore
   hookIndex++
 
   return [hook.state, setState]
@@ -245,6 +272,8 @@ function reconcileChildren(wipFiber, elements) {
     const sameType = oldFiber && element && element.type == oldFiber.type
 
     if (sameType) {
+      // @ts-ignore
+
       newFiber = {
         type: oldFiber.type,
         props: element.props,
@@ -255,6 +284,7 @@ function reconcileChildren(wipFiber, elements) {
       }
     }
     if (element && !sameType) {
+      // @ts-ignore
       newFiber = {
         type: element.type,
         props: element.props,
@@ -266,6 +296,7 @@ function reconcileChildren(wipFiber, elements) {
     }
     if (oldFiber && !sameType) {
       oldFiber.effectTag = EffectTag.DELETION
+      // @ts-ignore
       deletedFibers.push(oldFiber)
     }
 
@@ -276,6 +307,7 @@ function reconcileChildren(wipFiber, elements) {
     if (index === 0) {
       wipFiber.child = newFiber
     } else if (element) {
+      // @ts-ignore
       prevSibling.sibling = newFiber
     }
 
