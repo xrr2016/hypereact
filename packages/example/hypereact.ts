@@ -2,6 +2,12 @@
 
 const TEXT_ELEMENT = "TEXT_ELEMENT"
 
+enum EffectTag {
+  UPDATE,
+  PLACEMENT,
+  DELETION,
+}
+
 function createElement(type, props, ...children) {
   return {
     type,
@@ -39,8 +45,9 @@ const isEvent = key => key.startsWith("on")
 const isProperty = key => key !== "children" && !isEvent(key)
 const isNew = (prev, next) => key => prev[key] !== next[key]
 const isGone = (prev, next) => key => !(key in next)
+
 function updateDom(dom: HTMLElement, prevProps, nextProps) {
-  //Remove old or changed event listeners
+  // 删除旧的事件监听器
   Object.keys(prevProps)
     .filter(isEvent)
     .filter(key => !(key in nextProps) || isNew(prevProps, nextProps)(key))
@@ -49,7 +56,7 @@ function updateDom(dom: HTMLElement, prevProps, nextProps) {
       dom.removeEventListener(eventType, prevProps[name])
     })
 
-  // Remove old properties
+  // 移出旧的的属性
   Object.keys(prevProps)
     .filter(isProperty)
     .filter(isGone(prevProps, nextProps))
@@ -61,7 +68,7 @@ function updateDom(dom: HTMLElement, prevProps, nextProps) {
       }
     })
 
-  // Set new or changed properties
+  // 设置新的属性
   Object.keys(nextProps)
     .filter(isProperty)
     .filter(isNew(prevProps, nextProps))
@@ -73,7 +80,7 @@ function updateDom(dom: HTMLElement, prevProps, nextProps) {
       }
     })
 
-  // Add event listeners
+  // 添加事件监听器
   Object.keys(nextProps)
     .filter(isEvent)
     .filter(isNew(prevProps, nextProps))
@@ -84,7 +91,7 @@ function updateDom(dom: HTMLElement, prevProps, nextProps) {
 }
 
 function commitRoot() {
-  deletions.forEach(commitWork)
+  deletedFibers.forEach(commitWork)
   commitWork(wipRoot.child)
   currentRoot = wipRoot
   wipRoot = null
@@ -96,11 +103,11 @@ function commitWork(fiber) {
   }
 
   const domParent = fiber.parent.dom
-  if (fiber.effectTag === "PLACEMENT" && fiber.dom != null) {
+  if (fiber.effectTag === EffectTag.PLACEMENT && fiber.dom != null) {
     domParent.appendChild(fiber.dom)
-  } else if (fiber.effectTag === "UPDATE" && fiber.dom != null) {
+  } else if (fiber.effectTag === EffectTag.UPDATE && fiber.dom != null) {
     updateDom(fiber.dom, fiber.alternate.props, fiber.props)
-  } else if (fiber.effectTag === "DELETION") {
+  } else if (fiber.effectTag === EffectTag.DELETION) {
     domParent.removeChild(fiber.dom)
   }
 
@@ -116,14 +123,14 @@ function render(element, container) {
     },
     alternate: currentRoot,
   }
-  deletions = []
+  deletedFibers = []
   nextUnitOfWork = wipRoot
 }
 
 let nextUnitOfWork = null
 let currentRoot = null
 let wipRoot = null
-let deletions = null
+let deletedFibers = null
 
 function workLoop(deadline) {
   let shouldYield = false
@@ -179,7 +186,7 @@ function reconcileChildren(wipFiber, elements) {
         dom: oldFiber.dom,
         parent: wipFiber,
         alternate: oldFiber,
-        effectTag: "UPDATE",
+        effectTag: EffectTag.UPDATE,
       }
     }
     if (element && !sameType) {
@@ -189,12 +196,12 @@ function reconcileChildren(wipFiber, elements) {
         dom: null,
         parent: wipFiber,
         alternate: null,
-        effectTag: "PLACEMENT",
+        effectTag: EffectTag.PLACEMENT,
       }
     }
     if (oldFiber && !sameType) {
-      oldFiber.effectTag = "DELETION"
-      deletions.push(oldFiber)
+      oldFiber.effectTag = EffectTag.DELETION
+      deletedFibers.push(oldFiber)
     }
 
     if (oldFiber) {
