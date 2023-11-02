@@ -1,6 +1,4 @@
-import './style.css';
-import App from './App';
-import Hypereact from './hypereact';
+import "./style.css"
+import { renderApp } from "./App"
 
-const container = document.getElementById('app');
-Hypereact.render(App, container);
+renderApp()
