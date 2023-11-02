@@ -2,7 +2,7 @@
 // import Hypereact from 'hypereact';
 import viteLogo from "/vite.svg"
 import javascriptLogo from "./javascript.svg"
-import Hypereact from "./hypereact"
+import Hypereact, { useState } from "./hypereact"
 
 let value = "Hypereact"
 
@@ -11,7 +11,21 @@ const updateValue = e => {
   renderApp()
 }
 
-const HelloFunctional = () => <h2>Hello, Functional Component</h2>
+const HelloFunctional = () => {
+  const [count, setCounter] = useState(1)
+
+  const handleClick = () => {
+    setCounter(() => count + 1)
+  }
+
+  return (
+    <div>
+      <h2>Hello, Functional Component</h2>
+      <p>Counter: {count}</p>
+      <button onClick={handleClick}>Plus 1</button>
+    </div>
+  )
+}
 
 export const renderApp = () => {
   /** @jsx Hypereact.createElement */
