@@ -27,6 +27,8 @@ const HelloFunctional = () => {
   )
 }
 
+const posts = [1, 2, 3, 4, 5]
+
 export const renderApp = () => {
   /** @jsx Hypereact.createElement */
   const App = (
@@ -42,8 +44,16 @@ export const renderApp = () => {
         <img src={javascriptLogo} class="logo vanilla" alt="JavaScript logo" />
       </a>
 
-      <h1>Hello {value}!</h1>
+      <h1 style={{ color: "white", backgroundColor: "black", padding: "12px" }}>
+        Hello {value}!
+      </h1>
       <input onInput={updateValue} value={value} />
+
+      <div>
+        {posts.map(post => (
+          <p>{post}</p>
+        ))}
+      </div>
 
       <HelloFunctional />
     </div>

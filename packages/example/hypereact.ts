@@ -1,9 +1,9 @@
 const TEXT_ELEMENT = "TEXT_ELEMENT"
 
 enum EffectTag {
-  UPDATE,
-  PLACEMENT,
-  DELETION,
+  UPDATE = "UPDATE",
+  DELETION = "DELETION",
+  PLACEMENT = "PLACEMENT",
 }
 
 interface Fiber {
@@ -24,9 +24,11 @@ export function createElement(type, props, ...children) {
     type,
     props: {
       ...props,
-      children: children.map(child =>
-        typeof child === "object" ? child : createTextElement(child)
-      ),
+      children: children
+        .flat()
+        .map(child =>
+          typeof child === "object" ? child : createTextElement(child)
+        ),
     },
   }
 }
@@ -54,12 +56,15 @@ function createDom(fiber: Fiber) {
   return dom
 }
 
+const isStyle = key => key === "style"
 const isEvent = key => key.startsWith("on")
-const isProperty = key => key !== "children" && !isEvent(key)
+const isProperty = key => key !== "children" && !isEvent(key) && !isStyle(key)
 const isNew = (prev, next) => key => prev[key] !== next[key]
 const isGone = (prev, next) => key => !(key in next)
 
 function updateDom(dom: HTMLElement, prevProps, nextProps) {
+  console.log(prevProps, nextProps)
+
   // 删除旧的事件监听器
   Object.keys(prevProps)
     .filter(isEvent)
@@ -79,6 +84,23 @@ function updateDom(dom: HTMLElement, prevProps, nextProps) {
       } else {
         dom[name] = ""
       }
+    })
+
+  const prevStyle = prevProps.style || {}
+  const nextStyle = nextProps.style || {}
+
+  // 移出旧的的样式
+  Object.keys(prevStyle)
+    .filter(isGone(prevStyle, nextStyle))
+    .forEach(name => {
+      dom.style[name] = ""
+    })
+
+  // 设置新的的样式
+  Object.keys(nextStyle)
+    .filter(isNew(prevStyle, nextStyle))
+    .forEach(name => {
+      dom.style[name] = nextStyle[name]
     })
 
   // 设置新的属性
@@ -111,10 +133,32 @@ function commitRoot() {
   wipRoot = null
 }
 
+function cancelEffects(fiber) {
+  if (fiber.hooks) {
+    fiber.hooks
+      .filter(hook => hook.tag === "effect" && hook.cancel)
+      .forEach(effectHook => {
+        effectHook.cancel()
+      })
+  }
+}
+
+function runEffects(fiber) {
+  if (fiber.hooks) {
+    fiber.hooks
+      .filter(hook => hook.tag === "effect" && hook.effect)
+      .forEach(effectHook => {
+        effectHook.cancel = effectHook.effect()
+      })
+  }
+}
+
 function commitWork(fiber: Fiber) {
   if (!fiber) {
     return
   }
+
+  console.log("Fiber: ", fiber)
 
   let domParentFiber = fiber.parent
   while (!domParentFiber.dom) {
@@ -123,11 +167,20 @@ function commitWork(fiber: Fiber) {
   const domParent = domParentFiber.dom
 
   if (fiber.effectTag === EffectTag.PLACEMENT && fiber.dom != null) {
-    domParent.appendChild(fiber.dom)
-  } else if (fiber.effectTag === EffectTag.UPDATE && fiber.dom != null) {
-    updateDom(fiber.dom, fiber.alternate.props, fiber.props)
+    if (fiber.dom != null) {
+      domParent.appendChild(fiber.dom)
+    }
+    runEffects(fiber)
+  } else if (fiber.effectTag === EffectTag.UPDATE) {
+    cancelEffects(fiber)
+    if (fiber.dom != null) {
+      updateDom(fiber.dom, fiber.alternate.props, fiber.props)
+    }
+    runEffects(fiber)
   } else if (fiber.effectTag === EffectTag.DELETION) {
+    cancelEffects(fiber)
     commitDeletion(fiber, domParent)
+    return
   }
 
   commitWork(fiber.child)
@@ -253,6 +306,35 @@ export function useState(initial: any) {
   return [hook.state, setState]
 }
 
+const hasDepsChanged = (prevDeps, nextDeps) =>
+  !prevDeps ||
+  !nextDeps ||
+  prevDeps.length !== nextDeps.length ||
+  prevDeps.some((dep, index) => dep !== nextDeps[index])
+
+export function useEffect(effect, deps) {
+  const oldHook =
+    // @ts-ignore
+    wipFiber.alternate &&
+    // @ts-ignore
+    wipFiber.alternate.hooks &&
+    // @ts-ignore
+    wipFiber.alternate.hooks[hookIndex]
+
+  const hasChanged = hasDepsChanged(oldHook ? oldHook.deps : undefined, deps)
+
+  const hook = {
+    tag: "effect",
+    effect: hasChanged ? effect : null,
+    cancel: hasChanged && oldHook && oldHook.cancel,
+    deps,
+  }
+  // @ts-ignore
+  wipFiber.hooks.push(hook)
+  // @ts-ignore
+  hookIndex++
+}
+
 function updateHostComponent(fiber) {
   if (!fiber.dom) {
     fiber.dom = createDom(fiber)
@@ -320,6 +402,7 @@ const Hypereact = {
   createElement,
   render,
   useState,
+  useEffect,
 }
 
 export default Hypereact
