@@ -271,6 +271,7 @@ export function useState(initial: any) {
     // @ts-ignore
     wipFiber.alternate.hooks[hookIndex]
   const hook = {
+    tag: "state",
     state: oldHook ? oldHook.state : initial,
     queue: [],
   }
