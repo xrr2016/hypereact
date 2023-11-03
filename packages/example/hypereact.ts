@@ -63,8 +63,6 @@ const isNew = (prev, next) => key => prev[key] !== next[key]
 const isGone = (prev, next) => key => !(key in next)
 
 function updateDom(dom: HTMLElement, prevProps, nextProps) {
-  console.log(prevProps, nextProps)
-
   // 删除旧的事件监听器
   Object.keys(prevProps)
     .filter(isEvent)
@@ -158,7 +156,7 @@ function commitWork(fiber: Fiber) {
     return
   }
 
-  console.log("Fiber: ", fiber)
+  // console.log("Fiber: ", fiber)
 
   let domParentFiber = fiber.parent
   while (!domParentFiber.dom) {

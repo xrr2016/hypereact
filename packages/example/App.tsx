@@ -2,7 +2,7 @@
 // import Hypereact from 'hypereact';
 import viteLogo from "/vite.svg"
 import javascriptLogo from "./javascript.svg"
-import Hypereact, { useState } from "./hypereact"
+import Hypereact, { useState, useEffect } from "./hypereact"
 
 let value = "Hypereact"
 
@@ -18,6 +18,10 @@ const HelloFunctional = () => {
     setCounter(() => count + 1)
   }
 
+  useEffect(() => {
+    console.log(count)
+  }, [count])
+
   return (
     <div>
       <h2>Hello, Functional Component</h2>
@@ -29,9 +33,9 @@ const HelloFunctional = () => {
 
 const posts = [1, 2, 3, 4, 5]
 
-export const renderApp = () => {
-  /** @jsx Hypereact.createElement */
-  const App = (
+/** @jsx Hypereact.createElement */
+const App = () => {
+  return (
     <div>
       <a href="https://vitejs.dev" target="_blank">
         <img src={viteLogo} class="logo" alt="Vite logo" />
@@ -58,7 +62,9 @@ export const renderApp = () => {
       <HelloFunctional />
     </div>
   )
+}
 
+export const renderApp = () => {
   const container = document.getElementById("app")
-  Hypereact.render(App, container)
+  Hypereact.render(<App />, container)
 }
